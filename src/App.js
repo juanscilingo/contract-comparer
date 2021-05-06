@@ -61,13 +61,15 @@ function App() {
   const fetchContract = async index => {
     let response = await axios.get(`https://api.bscscan.com/api?module=contract&action=getsourcecode&address=${addresses[index]}&apikey=${process.env.REACT_APP_BSC_SCAN_API_KEY}`);
     if (response?.data?.result.length) {
-      response = response?.data?.result[0].SourceCode;
-      response = response.slice(1).slice(0, -1);
-      response = JSON.parse(response);
+      let source;
 
-      console.log(response)
+      source = response?.data?.result[0].SourceCode;
 
-      const source = Object.entries(response.sources).reduce((acc, [name, contract]) => acc + `\r\n ${name} \r\n` + contract.content, "");
+      if (source.startsWith('{')) {
+        source = source.slice(1).slice(0, -1);
+        source = JSON.parse(source);
+        source = Object.entries(source.sources).reduce((acc, [name, contract]) => acc + `\r\n ${name} \r\n` + contract.content, "");
+      }
 
       const newContracts = [...contracts];
       newContracts[index] = source;
